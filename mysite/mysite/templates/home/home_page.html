@@ -2,7 +2,7 @@
 {% block extra_css %}
     <style>
       body{
-        padding-top: 100px;
+        padding-top: 150px;
       }
     </style>
 {% endblock %}
@@ -11,14 +11,13 @@
 {% block content %}
 
   {% image self.banner_image width-1500 as img %}
-
+ 
   <center><h1 class="display-4">{{ self.banner_title }}</h1></center>
   <center><div class="lead">
     <h4>{{ self.banner_subtitle|richtext }}</h4>
     <br>
     <img src="{{ img.url }}" class="d-block w-100" alt="{{ img.alt }}">
     <br><br><br>
-    <h3>What we Do?</h3>
   </div></center>
 
   <br>
@@ -44,9 +43,7 @@
     </div>
   </div>
 <br><br>
-  <div class="container">
-    <center><h4 class=" ">Random cards to display some information like features or something</h4></center>
-    <br>
+
     {% for block in page.contentCard %}
 
       {% include_block block %}

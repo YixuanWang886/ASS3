@@ -1,81 +1,62 @@
-import pickle
-from django.conf import settings
-from cam_app import views
-from django.http import StreamingHttpResponse
-import sqlite3
-import datetime
-
-# import some common libraries
-import numpy as np
-import os, json, cv2, random, glob, uuid
-import matplotlib.pyplot as plt
-
-from pathlib import Path
-import time
+import cv2
+from torchvision import transforms
+from ultralytics import YOLO
 
 class VideoCamera(object):
     def __init__(self):
-        # Using OpenCV to capture from device 0. If you have trouble capturing
-        # from a webcam, comment the line below out and use a video file
-        # instead.
         self.video = cv2.VideoCapture(0)
-        # If you decide to use video.mp4, you must have this file in the folder
-        # as the main.py.
-        # self.video = cv2.VideoCapture('video.mp4')
+
+        # Load the YOLOv8 model
+        self.model = YOLO("/Users/yixuanwang/Desktop/programs/Basic_Web_App-master/mysite/models/best-3.pt")
+        self.model.conf = 0.5  # Set the confidence threshold
+
+        # Set input image size
+        self.input_size = 800
 
     def __del__(self):
         self.video.release()
 
     def get_frame_with_detection(self):
-        success, image = self.video.read()
-        # We are using Motion JPEG, but OpenCV defaults to capture raw images,
-        # so we must encode it into JPEG in order to correctly display the
-        # video stream.
-        outputs = image
-        # if you dont want to show the detection, comment the below code till outputImage = image, and change it to outputImage = outputs
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        eyes_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
-        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        gray = cv2.equalizeHist(gray)
-        #-- Detect faces
-        faces = face_cascade.detectMultiScale(gray)
-        for (x,y,w,h) in faces:
-            center = (x + w//2, y + h//2)
-            image = cv2.ellipse(image, center, (w//2, h//2), 0, 0, 360, (255, 0, 255), 4)
-            faceROI = gray[y:y+h,x:x+w]
-            #-- In each face, detect eyes
-            eyes = eyes_cascade.detectMultiScale(faceROI)
-            for (x2,y2,w2,h2) in eyes:
-                eye_center = (x + x2 + w2//2, y + y2 + h2//2)
-                radius = int(round((w2 + h2)*0.25))
-                image = cv2.circle(image, eye_center, radius, (255, 0, 0 ), 4)
-        outputImage = image
-        ret, outputImagetoReturn = cv2.imencode('.jpg', outputImage)
-        return outputImagetoReturn.tobytes(), outputImage
-    
+    # Read frame from video
+        success, frame = self.video.read()
+
+        if success:
+            # Run YOLOv8 inference on the frame
+            results = self.model(frame)
+            # Visualize the results on the frame
+            annotated_frame = results[0].plot()
+
+            # Convert the annotated frame to OpenCV format
+            #annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_RGB2BGR)
+
+            # Convert the annotated frame to bytes
+            ret, output_image = cv2.imencode('.jpg', annotated_frame)
+            output_bytes = output_image.tobytes()
+
+            return output_bytes, annotated_frame
+
+        else:
+            return None, None
+
+
     def get_frame_without_detection(self):
         success, image = self.video.read()
-        # We are using Motion JPEG, but OpenCV defaults to capture raw images,
-        # so we must encode it into JPEG in order to correctly display the
-        # video stream.
-        outputs = image
-        outputImage = outputs
-        ret, outputImagetoReturn = cv2.imencode('.jpg', outputImage)
-        return outputImagetoReturn.tobytes(), outputImage
+        outputs = image.copy()
 
+        ret, output_image = cv2.imencode('.jpg', outputs)
+        return output_image.tobytes(), outputs
 
 def generate_frames(camera, AI):
     try:
         while True:
             if AI:
-                frame, img = camera.get_frame_with_detection()
-            if not AI:
-                frame, img = camera.get_frame_without_detection()
+                frame, _ = camera.get_frame_with_detection()  # 获取带有检测的帧
+            else:
+                frame, _ = camera.get_frame_without_detection()  # 获取不带检测的帧
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-    except Exception as e:
-        print(e)
-
+    # except Exception as e:
+    #     print(e)
     finally:
         print("Reached finally, detection stopped")
         cv2.destroyAllWindows()

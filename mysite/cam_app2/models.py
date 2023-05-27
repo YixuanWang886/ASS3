@@ -17,6 +17,8 @@ from pathlib import Path
 
 
 import os, uuid, glob, cv2
+from torchvision import transforms
+from ultralytics import YOLO
 
 str_uuid = uuid.uuid4()  # The UUID for image uploading
 
@@ -75,6 +77,11 @@ class ImagePage(Page):
         return context
 
     def serve(self, request):
+        model = YOLO("/Users/yixuanwang/Desktop/programs/Basic_Web_App-master/mysite/models/best-3.pt")
+        #model = YOLO("/Users/yixuanwang/Desktop/programs/Basic_Web_App-master/mysite/models/best-3.pt")
+
+        model.conf = 0.5  # Set the confidence threshold
+
         emptyButtonFlag = False
         if request.POST.get('start')=="":
             context = self.reset_context(request)
@@ -89,14 +96,19 @@ class ImagePage(Page):
                     ###
                     # For each file, read, pass to model, do something, save it #
                     ###
+                    
+                    
                     filename = file.split('/')[-1]
                     filepath = os.path.join(fileroot, filename)
                     img = cv2.imread(filepath.strip())
-                    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    
+                    results = model(img)
+                    annotated_img=results[0].plot()
+
                     fn = filename.split('.')[:-1][0]
                     r_filename = f'result_{fn}.jpeg'
                     print(r_filename)
-                    cv2.imwrite(str(os.path.join(res_f_root, r_filename)), gray)
+                    cv2.imwrite(str(os.path.join(res_f_root, r_filename)),annotated_img)
                     r_media_filepath = Path(f"{settings.MEDIA_URL}Result/{r_filename}")
                     print(r_media_filepath)
                     with open(Path(f'{settings.MEDIA_ROOT}/Result/Result.txt'), 'a') as f:
@@ -127,3 +139,5 @@ class ImagePage(Page):
         context = self.reset_context(request)
         reset()
         return render(request, "cam_app2/image.html", {'page': self})
+
+        
