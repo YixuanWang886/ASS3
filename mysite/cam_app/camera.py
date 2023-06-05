@@ -55,8 +55,8 @@ def generate_frames(camera, AI):
                 frame, _ = camera.get_frame_without_detection()  # 获取不带检测的帧
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-    # except Exception as e:
-    #     print(e)
+    except Exception as e:
+         print(e)
     finally:
         print("Reached finally, detection stopped")
         cv2.destroyAllWindows()

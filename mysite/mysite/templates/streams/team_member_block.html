@@ -1,0 +1,26 @@
+{% load wagtailimages_tags  %}
+
+<div class="container">
+  <h3 class="text-center">{{ self.member.title }}</h3>
+  <div class="row">
+    <div class="col-md-4">
+      {% image self.member.image height-300 as img %}
+      <img src="{{ img.url }}" alt="{{ img.alt }}" class="card-img" style="max-width: 100%; height: 300px ;width: auto;">
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title">{{ self.member.name }}</h5>
+        <p class="card-text">{{ self.member.bio }}</p>
+        {% if self.member.button_page %}
+          <a href="{{ self.member.button_page.url }}" class="btn btn-primary">
+            Know More (internal)
+          </a>
+        {% elif self.member.button_url %}
+          <a href="{{ self.member.button_url }}" class="btn btn-primary">
+            Know More (external)
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

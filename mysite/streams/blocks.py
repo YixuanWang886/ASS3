@@ -46,7 +46,32 @@ class RichtextBlock(blocks.RichTextBlock):
         label = "Full RichText"
 
 
+class TeamMemberBlock(blocks.StructBlock):
+    """Team member block"""
 
+    member = blocks.StructBlock(
+        [
+            ("title", blocks.CharBlock(required=False, help_text='Add the member title')),
+            ("image", ImageChooserBlock(required=True)),
+            ("name", blocks.CharBlock(required=True, max_length=255)),
+            ("bio", blocks.RichTextBlock(required=True)),
+            ("button_page", blocks.PageChooserBlock(required=False)),
+            ("button_url", blocks.URLBlock(required=False)),
+        ]
+    )
+
+    class Meta:
+        template = "streams/team_member_block.html"
+        icon = "user"
+        label = "Team Member"
+
+
+class AdvantageBlock(blocks.StructBlock):
+    title = blocks.CharBlock(required=True, max_length=255)
+    description = blocks.TextBlock(required=True)
+
+    class Meta:
+        icon = "fa-check"
 class SimpleRichtextBlock(blocks.RichTextBlock):
     """Simple Rich Text  with limited features"""
 

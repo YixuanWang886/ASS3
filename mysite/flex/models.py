@@ -13,12 +13,16 @@ class FlexPage(Page):
     """Flexible page class"""
     template = "flex/flex_page.html"
 
+
     content = StreamField(
         [
             ("title_and_text", blocks.TitleAndTextBlock(classname='text_and_title')),
             ("full_rich_text", blocks.RichtextBlock()),
             ("simple_rich_text", blocks.SimpleRichtextBlock()),
             ("cards", blocks.CardBlock()),
+            ("members", blocks.TeamMemberBlock()),
+            ("advantages", blocks.AdvantageBlock()),
+
         ],
         use_json_field=True,
         null=True,
