@@ -7,7 +7,7 @@ class VideoCamera(object):
         self.video = cv2.VideoCapture(0)
 
         # Load the YOLOv8 model
-        self.model = YOLO("/Users/yixuanwang/Desktop/programs/Basic_Web_App-master/mysite/models/best-3.pt")
+        self.model = YOLO("models/best-2.pt")
         self.model.conf = 0.5  # Set the confidence threshold
 
         # Set input image size

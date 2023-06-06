@@ -77,7 +77,7 @@ class ImagePage(Page):
         return context
 
     def serve(self, request):
-        model = YOLO("/Users/yixuanwang/Desktop/programs/Basic_Web_App-master/mysite/models/best-3.pt")
+        model = YOLO("models/best-2.pt")
         #model = YOLO("/Users/yixuanwang/Desktop/programs/Basic_Web_App-master/mysite/models/best-3.pt")
 
         model.conf = 0.5  # Set the confidence threshold
